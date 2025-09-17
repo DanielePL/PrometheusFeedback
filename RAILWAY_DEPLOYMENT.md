@@ -16,18 +16,21 @@ NODE_ENV=production npm start
 2. Verbinde dein GitHub Repository
 3. Erstelle ein neues Projekt aus diesem Repository
 
-### 3. Environment Variables setzen
-In Railway Dashboard → Variables:
+### 3. Environment Variables setzen (KRITISCH!)
+In Railway Dashboard → Variables → Add Variable:
 
+**REQUIRED (Server crasht ohne diese):**
 ```bash
-# Required
 SUPABASE_URL=https://your-project-id.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 JWT_SECRET=your-super-secret-jwt-key-here
+```
 
-# Optional (wird automatisch gesetzt)
+**OPTIONAL:**
+```bash
 PORT=5000
 NODE_ENV=production
+CORS_ORIGIN=https://your-app-name.railway.app
 ```
 
 ### 4. CORS Origin konfigurieren
@@ -38,6 +41,19 @@ CORS_ORIGIN=https://your-app-name.railway.app
 
 ### 5. Deployment
 Railway deployed automatisch bei jedem Git Push zu `main`.
+
+## ⚠️ Wichtige Fixes
+
+### Node.js Version
+- ✅ **Fixed:** Node.js 20+ für Supabase Kompatibilität
+- ✅ **Fixed:** Environment Variables Check beim Startup
+- ✅ **Fixed:** Bessere Fehlermeldungen für fehlende Variablen
+
+### Environment Variables
+Der Server **MUSS** folgende Variables haben:
+1. `SUPABASE_URL`
+2. `SUPABASE_SERVICE_ROLE_KEY`
+3. `JWT_SECRET` (optional, aber empfohlen)
 
 ## 📝 Features
 

@@ -16,6 +16,8 @@ const requiredEnvVars = [
 ];
 
 console.log('🚀 Railway Migration Script gestartet...');
+console.log(`📝 Node.js Version: ${process.version}`);
+console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 
 // Check required environment variables
 const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
@@ -24,8 +26,18 @@ if (missingEnvVars.length > 0) {
   missingEnvVars.forEach(envVar => {
     console.error(`   - ${envVar}`);
   });
-  console.error('\nBitte setze diese Environment Variables in Railway:');
-  console.error('https://railway.app/dashboard > Your Project > Variables');
+  console.error('');
+  console.error('🔧 Railway Setup:');
+  console.error('   1. Gehe zu Railway Dashboard');
+  console.error('   2. Wähle dein Projekt');
+  console.error('   3. Gehe zu "Variables" Tab');
+  console.error('   4. Füge folgende Variables hinzu:');
+  console.error('      - SUPABASE_URL=https://your-project.supabase.co');
+  console.error('      - SUPABASE_SERVICE_ROLE_KEY=your-service-role-key');
+  console.error('      - JWT_SECRET=your-secret-key');
+  console.error('');
+  console.error('📝 Template: .env.railway.template');
+  console.error('📖 Guide: RAILWAY_DEPLOYMENT.md');
   process.exit(1);
 }
 

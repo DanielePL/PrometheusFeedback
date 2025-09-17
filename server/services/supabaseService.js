@@ -4,6 +4,20 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseServiceKey) {
+  console.error('❌ Fehlende Environment Variables:');
+  console.error('   SUPABASE_URL:', supabaseUrl ? '✅ SET' : '❌ MISSING');
+  console.error('   SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? '✅ SET' : '❌ MISSING');
+  console.error('');
+  console.error('🔧 Railway Setup:');
+  console.error('   1. Gehe zu Railway Dashboard');
+  console.error('   2. Wähle dein Projekt');
+  console.error('   3. Gehe zu "Variables" Tab');
+  console.error('   4. Füge folgende Variables hinzu:');
+  console.error('      - SUPABASE_URL=https://your-project.supabase.co');
+  console.error('      - SUPABASE_SERVICE_ROLE_KEY=your-service-role-key');
+  console.error('      - JWT_SECRET=your-secret-key');
+  console.error('');
+  console.error('📝 Siehe auch: .env.railway.template');
   throw new Error('Supabase URL und Service Role Key sind erforderlich');
 }
 

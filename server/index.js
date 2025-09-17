@@ -6,7 +6,34 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 require('dotenv').config();
 
-// Import routes
+// Check critical environment variables
+function checkEnvironmentVariables() {
+  const required = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
+  const missing = required.filter(key => !process.env[key]);
+  
+  if (missing.length > 0) {
+    console.error('❌ Server kann nicht starten - Fehlende Environment Variables:');
+    missing.forEach(key => console.error(`   - ${key}`));
+    console.error('');
+    console.error('🔧 Railway Setup Guide:');
+    console.error('   1. Gehe zu Railway Dashboard → Variables');
+    console.error('   2. Füge folgende Variables hinzu:');
+    console.error('      - SUPABASE_URL=https://your-project.supabase.co');
+    console.error('      - SUPABASE_SERVICE_ROLE_KEY=your-service-role-key');
+    console.error('      - JWT_SECRET=your-secret-key');
+    console.error('');
+    console.error('📝 Template: .env.railway.template');
+    console.error('📖 Guide: RAILWAY_DEPLOYMENT.md');
+    process.exit(1);
+  }
+  
+  console.log('✅ Environment Variables check passed');
+}
+
+// Run environment check
+checkEnvironmentVariables();
+
+// Import routes (after env check)
 const feedbackRoutes = require('./routes/feedback');
 const adminRoutes = require('./routes/admin');
 const analyticsRoutes = require('./routes/analytics');
