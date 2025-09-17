@@ -72,11 +72,12 @@ export const feedbackService = {
   },
 
   // Admin Login
-  async adminLogin(password) {
+  async adminLogin(email, password) {
     try {
-      const response = await api.post('/admin/login', { password });
-      if (response.data.token) {
-        localStorage.setItem('admin_token', response.data.token);
+      const response = await api.post('/admin/login', { email, password });
+      if (response.data.data && response.data.data.token) {
+        localStorage.setItem('admin_token', response.data.data.token);
+        localStorage.setItem('admin_user', JSON.stringify(response.data.data.user));
       }
       return response.data;
     } catch (error) {
@@ -87,6 +88,7 @@ export const feedbackService = {
   // Admin Logout
   adminLogout() {
     localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_user');
   },
 
   // Admin Status prüfen
@@ -104,7 +106,7 @@ export const feedbackService = {
     }
   },
 
-  // Alle Feedback-Sessions laden
+  // Alle Sessions laden
   async getAllSessions() {
     try {
       const response = await api.get('/admin/sessions');
@@ -114,7 +116,7 @@ export const feedbackService = {
     }
   },
 
-  // Question Management
+  // Questions Management
   async createQuestion(questionData) {
     try {
       const response = await api.post('/admin/questions', questionData);
@@ -147,32 +149,27 @@ export const feedbackService = {
       const response = await api.patch(`/admin/questions/${questionId}/toggle`);
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Fehler beim Umschalten der Frage');
+      throw new Error(error.response?.data?.message || 'Fehler beim Aktivieren/Deaktivieren der Frage');
     }
   },
 
-  // Export Funktionalitäten
+  // Export Responses
   async exportResponses(format = 'json') {
     try {
       const response = await api.get(`/admin/export?format=${format}`, {
         responseType: 'blob'
       });
       
-      // Download-Link erstellen
+      // Create download link
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `prometheus-feedback-export-${new Date().toISOString().split('T')[0]}.${format}`);
+      link.setAttribute('download', `feedback_responses.${format}`);
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-      return { success: true };
+      link.remove();
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Fehler beim Exportieren');
     }
   }
 };
-
-export default feedbackService;

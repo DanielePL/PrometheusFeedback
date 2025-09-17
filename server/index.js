@@ -3,12 +3,14 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 require('dotenv').config();
 
 // Import routes
 const feedbackRoutes = require('./routes/feedback');
 const adminRoutes = require('./routes/admin');
 const analyticsRoutes = require('./routes/analytics');
+const internalRoutes = require('./routes/internal');
 
 // Import middleware
 const authMiddleware = require('./middleware/auth');
@@ -31,34 +33,67 @@ app.use(helmet({
 // Compression
 app.use(compression());
 
+// Trust proxy für Codespaces/Cloud-Umgebungen
+app.set('trust proxy', 1);
+
 // CORS configuration
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: function (origin, callback) {
+    // In development, allow all origins
+    if (process.env.NODE_ENV === 'development') {
+      callback(null, true);
+      return;
+    }
+    
+    // In production, only allow specific origins
+    const allowedOrigins = [
+      process.env.CORS_ORIGIN || 'http://localhost:3000',
+      /\.app\.github\.dev$/  // Allow GitHub Codespaces
+    ];
+    
+    if (!origin) return callback(null, true);
+    
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (typeof allowed === 'string') {
+        return allowed === origin;
+      } else if (allowed instanceof RegExp) {
+        return allowed.test(origin);
+      }
+      return false;
+    });
+    
+    callback(null, isAllowed);
+  },
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 };
 app.use(cors(corsOptions));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // limit each IP to 100 requests per windowMs
-  message: {
-    error: 'Zu viele Anfragen von dieser IP-Adresse. Bitte versuchen Sie es später erneut.'
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use('/api/', limiter);
+// Rate limiting - Deaktiviert in Development
+if (process.env.NODE_ENV !== 'development') {
+  const limiter = rateLimit({
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
+    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // limit each IP to 100 requests per windowMs
+    message: {
+      error: 'Zu viele Anfragen von dieser IP-Adresse. Bitte versuchen Sie es später erneut.'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  app.use('/api/', limiter);
 
-// Stricter rate limiting for admin routes
-const adminLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // limit each IP to 20 requests per windowMs
-  message: {
-    error: 'Zu viele Admin-Anfragen. Bitte versuchen Sie es später erneut.'
-  }
-});
+  // Stricter rate limiting for admin routes
+  const adminLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 20, // limit each IP to 20 requests per windowMs
+    message: {
+      error: 'Zu viele Admin-Anfragen. Bitte versuchen Sie es später erneut.'
+    }
+  });
+  app.use('/api/admin', adminLimiter);
+}
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -76,17 +111,28 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/feedback', feedbackRoutes);
-app.use('/api/admin', adminLimiter, adminRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/analytics', authMiddleware, analyticsRoutes);
+app.use('/api/internal', internalRoutes);
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Endpoint nicht gefunden',
-    path: req.originalUrl
+// Serve static files from React app in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/build')));
+  
+  // Handle React routing, return all requests to React app
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
   });
-});
+} else {
+  // 404 handler for development
+  app.use('*', (req, res) => {
+    res.status(404).json({
+      success: false,
+      message: 'Endpoint nicht gefunden',
+      path: req.originalUrl
+    });
+  });
+}
 
 // Global error handler
 app.use((err, req, res, next) => {

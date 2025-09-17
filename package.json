@@ -4,11 +4,15 @@
   "description": "Prometheus Feedback Tool - Mobile-First React + Node.js Feedback System",
   "main": "index.js",
   "scripts": {
+    "start": "cd server && npm start",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && npm run dev",
     "client": "cd client && npm start",
     "build": "cd client && npm run build",
+    "build:production": "cd client && npm run build && cd ../server && npm install --only=production",
     "install:all": "npm install && cd client && npm install && cd ../server && npm install",
+    "deploy:setup": "npm run build:production && cd server && node setup-database.js",
+    "railway:deploy": "railway up",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

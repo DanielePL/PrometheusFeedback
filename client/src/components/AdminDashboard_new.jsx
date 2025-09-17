@@ -3,12 +3,15 @@ import {
   BarChart3, 
   Users, 
   MessageSquare, 
-  TrendingUp,
+  TrendingUp, 
+  TrendingDown,
   Download,
   LogOut,
   Activity,
   Star,
-  FileText
+  FileText,
+  Calendar,
+  CheckCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAdmin } from '../context/AdminContext';
@@ -28,7 +31,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     loadDashboardData();
-  }, [loadDashboardData]);
+  }, []);
 
   const stats = getDashboardStats();
 
@@ -174,30 +177,6 @@ const AdminDashboard = () => {
             {activeTab === 'export' && <ExportTab onExport={handleExport} />}
           </div>
         </div>
-
-        {/* Quick Actions */}
-        <div className="bg-black/80 backdrop-blur-sm border border-orange-600/50 rounded-2xl p-6 mt-8">
-          <h3 className="text-xl font-bold text-white mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="bg-orange-600/20 border border-orange-600/50 rounded-lg p-4 hover:bg-orange-600/30 transition-colors text-left">
-              <MessageSquare className="w-6 h-6 text-orange-400 mb-2" />
-              <h4 className="text-white font-semibold">Create Survey</h4>
-              <p className="text-gray-400 text-sm">Design new feedback forms</p>
-            </button>
-            
-            <button className="bg-blue-600/20 border border-blue-600/50 rounded-lg p-4 hover:bg-blue-600/30 transition-colors text-left">
-              <Users className="w-6 h-6 text-blue-400 mb-2" />
-              <h4 className="text-white font-semibold">User Management</h4>
-              <p className="text-gray-400 text-sm">Manage user accounts</p>
-            </button>
-            
-            <button className="bg-green-600/20 border border-green-600/50 rounded-lg p-4 hover:bg-green-600/30 transition-colors text-left">
-              <Download className="w-6 h-6 text-green-400 mb-2" />
-              <h4 className="text-white font-semibold">Generate Report</h4>
-              <p className="text-gray-400 text-sm">Create detailed reports</p>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -209,108 +188,41 @@ const OverviewTab = ({ analyticsData, stats }) => {
     <div className="space-y-6">
       <h3 className="text-xl font-bold text-white mb-4">Dashboard Overview</h3>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left Column */}
-        <div className="space-y-6">
-          {/* Quick Stats */}
-          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
-            <h4 className="font-semibold text-orange-400 mb-4">Performance Metrics</h4>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Average Rating</span>
-                <div className="flex items-center space-x-2">
-                  <Star className="w-4 h-4 text-yellow-400" />
-                  <span className="text-white font-bold">{stats?.avgRating || 0}/5</span>
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Response Rate</span>
-                <span className="text-white font-bold">{stats?.completionRate || 0}%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Total Responses</span>
-                <span className="text-white font-bold">{stats?.totalResponses || 0}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Active Users</span>
-                <span className="text-white font-bold">{stats?.totalUsers || 0}</span>
-              </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Quick Stats */}
+        <div className="space-y-4">
+          <h4 className="font-semibold text-orange-400">Quick Stats</h4>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Average Rating</span>
+              <span className="text-white font-bold">{stats?.avgRating || 0}/5</span>
             </div>
-          </div>
-
-          {/* Top Rated Features */}
-          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
-            <h4 className="font-semibold text-green-400 mb-4 flex items-center">
-              <TrendingUp className="w-4 h-4 mr-2" />
-              Top Rated Features
-            </h4>
-            <div className="space-y-3">
-              {analyticsData?.slice(0, 3).map((item, index) => (
-                <div key={item.question_id} className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-white text-sm font-medium">{item.questions?.question_text}</p>
-                    <p className="text-xs text-gray-400">{item.questions?.category}</p>
-                  </div>
-                  <div className="text-right ml-4">
-                    <p className="text-green-400 font-bold">{item.avg_rating?.toFixed(1)}/5</p>
-                    <p className="text-xs text-gray-400">{item.total_responses} responses</p>
-                  </div>
-                </div>
-              ))}
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Total Responses</span>
+              <span className="text-white font-bold">{stats?.totalResponses || 0}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Completed Sessions</span>
+              <span className="text-white font-bold">{stats?.completedSessions || 0}</span>
             </div>
           </div>
         </div>
 
-        {/* Right Column */}
-        <div className="space-y-6">
-          {/* Recent Activity */}
-          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
-            <h4 className="font-semibold text-orange-400 mb-4">Recent Activity</h4>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span className="text-gray-300 text-sm">New feedback submitted - 2 min ago</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                <span className="text-gray-300 text-sm">User session completed - 15 min ago</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                <span className="text-gray-300 text-sm">Export generated - 1 hour ago</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
-                <span className="text-gray-300 text-sm">New user registered - 2 hours ago</span>
-              </div>
+        {/* Recent Activity */}
+        <div className="space-y-4">
+          <h4 className="font-semibold text-orange-400">Recent Activity</h4>
+          <div className="space-y-3">
+            <div className="flex items-center space-x-3">
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <span className="text-gray-300 text-sm">New feedback submitted</span>
             </div>
-          </div>
-
-          {/* System Status */}
-          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
-            <h4 className="font-semibold text-orange-400 mb-4">System Status</h4>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-400">Database</span>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-green-400 text-sm">Online</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-400">API Server</span>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-green-400 text-sm">Running</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-400">Cache</span>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-green-400 text-sm">Active</span>
-                </div>
-              </div>
+            <div className="flex items-center space-x-3">
+              <Users className="w-4 h-4 text-blue-400" />
+              <span className="text-gray-300 text-sm">User session started</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <FileText className="w-4 h-4 text-purple-400" />
+              <span className="text-gray-300 text-sm">Data export completed</span>
             </div>
           </div>
         </div>

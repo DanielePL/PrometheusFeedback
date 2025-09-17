@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+  
+  body {
+    @apply bg-gray-900 text-white;
+    font-family: 'Inter', sans-serif;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .campus-card {
+    @apply bg-gray-800 border border-gray-700 rounded-lg p-6 hover:border-prometheus-orange transition-colors duration-200;
+  }
+
+  .campus-button {
+    @apply bg-prometheus-orange hover:bg-prometheus-orange-dark text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+
+  .campus-button-outline {
+    @apply border border-prometheus-orange text-prometheus-orange hover:bg-prometheus-orange hover:text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+
+  .flame-icon {
+    @apply text-prometheus-orange animate-flame;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-prometheus-orange to-prometheus-orange-light bg-clip-text text-transparent;
+  }
+
+  .hero-gradient {
+    @apply bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900;
+  }
+
+  .prometheus-feedback-card {
+    @apply bg-gray-800 border border-gray-700 rounded-xl p-8 shadow-2xl;
+  }
+
+  .prometheus-section-nav {
+    @apply bg-gray-800 border border-gray-700 rounded-lg p-3 hover:bg-gray-700 transition-colors duration-200;
+  }
+
+  .prometheus-input {
+    @apply bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:border-prometheus-orange focus:ring-prometheus-orange;
+  }
+
+  .prometheus-textarea {
+    @apply bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:border-prometheus-orange focus:ring-prometheus-orange;
+  }
+
+  .prometheus-select {
+    @apply bg-gray-800 border border-gray-600 text-white focus:border-prometheus-orange focus:ring-prometheus-orange;
+  }
+
+  .prometheus-button-primary {
+    @apply bg-prometheus-orange hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .prometheus-button-secondary {
+    @apply bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200;
+  }
+
+  .prometheus-badge-success {
+    @apply bg-green-600 text-white px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .prometheus-badge-warning {
+    @apply bg-yellow-600 text-white px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .prometheus-badge-error {
+    @apply bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium;
+  }
+}
+
+/* Override Trust Wallet and other extension styles */
+@layer utilities {
+  /* Force our dark theme styles with high specificity */
+  #root,
+  #root *,
+  .prometheus-feedback,
+  .prometheus-feedback * {
+    font-family: 'Inter', sans-serif !important;
+  }
+
+  /* Ensure dark backgrounds are maintained */
+  body,
+  #root,
+  .min-h-screen {
+    background-color: #1a1a1a !important;
+    color: white !important;
+  }
+
+  /* Ensure text colors are not overridden */
+  .text-white {
+    color: white !important;
+  }
+
+  .text-gray-300 {
+    color: #d1d5db !important;
+  }
+
+  .text-gray-400 {
+    color: #9ca3af !important;
+  }
+
+  /* Override extension box styles */
+  .prometheus-feedback .box,
+  .prometheus-feedback .header,
+  .prometheus-feedback .body,
+  .prometheus-feedback .button {
+    background: inherit !important;
+    color: inherit !important;
+    border: inherit !important;
+    font-family: 'Inter', sans-serif !important;
+  }
+
+  /* Prevent extension animations from interfering */
+  .prometheus-feedback * {
+    animation: none !important;
+    transition: all 0.2s ease !important;
+  }
+
+  /* Re-enable our specific animations */
+  .prometheus-feedback .group-hover\:scale-110 {
+    transition: transform 0.2s ease !important;
+  }
+
+  .prometheus-feedback .group:hover .group-hover\:scale-110 {
+    transform: scale(1.1) !important;
+  }
+}

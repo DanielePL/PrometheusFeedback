@@ -10,6 +10,7 @@ const { responses, utils, validators, UnauthorizedError } = require('../utils/he
 
 // Admin login
 router.post('/login', [
+  body('email').isEmail().withMessage('Gültige E-Mail erforderlich'),
   body('password').notEmpty().withMessage('Passwort ist erforderlich'),
 ], utils.asyncHandler(async (req, res) => {
   const errors = validationResult(req);
@@ -19,45 +20,47 @@ router.post('/login', [
 
   utils.logRequest(req, { action: 'admin_login' });
 
-  const { password } = req.body;
-  const adminPassword = process.env.ADMIN_PASSWORD;
+  const { email, password } = req.body;
+  
+  // Liste der erlaubten Admin-E-Mails mit Passwörtern
+  const adminCredentials = {
+    'danielepauli@gmail.com': 'prometheusadmin2025',
+    'joostensjoerd@hotmail.com': 'prometheusadmin2025'
+  };
 
-  if (!adminPassword) {
-    console.error('ADMIN_PASSWORD not set in environment variables');
-    return res.status(500).json(responses.error('Server-Konfigurationsfehler', 'CONFIG_ERROR'));
+  if (!adminCredentials[email] || adminCredentials[email] !== password) {
+    return res.status(401).json(responses.error('Ungültige Anmeldedaten', 'INVALID_CREDENTIALS'));
   }
 
   try {
-    // Simple password comparison (in production, use hashed passwords)
-    const isValidPassword = password === adminPassword;
-    
-    if (!isValidPassword) {
-      // Add delay to prevent brute force attacks
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return res.status(401).json(responses.unauthorized('Ungültiges Passwort'));
+    // JWT Token erstellen
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error('JWT_SECRET not set in environment variables');
+      return res.status(500).json(responses.error('Server-Konfigurationsfehler', 'CONFIG_ERROR'));
     }
 
-    // Generate JWT token
     const token = jwt.sign(
       { 
         role: 'admin',
-        timestamp: Date.now()
+        email: email,
+        timestamp: Date.now() 
       },
-      process.env.JWT_SECRET,
-      { 
-        expiresIn: '24h',
-        algorithm: 'HS256'
-      }
+      jwtSecret,
+      { expiresIn: '24h' }
     );
 
-    res.json(responses.success({
+    return res.json(responses.success('Erfolgreich angemeldet', {
       token,
+      user: {
+        email: email
+      },
       expiresIn: '24h'
-    }, 'Erfolgreich angemeldet'));
+    }));
 
   } catch (error) {
     console.error('Admin login error:', error);
-    res.status(500).json(responses.error('Interner Serverfehler', 'INTERNAL_ERROR'));
+    return res.status(500).json(responses.error('Server-Fehler beim Login', 'SERVER_ERROR'));
   }
 }));
 
@@ -74,16 +77,53 @@ router.get('/analytics', authMiddleware, utils.asyncHandler(async (req, res) => 
   utils.logRequest(req, { action: 'get_analytics' });
 
   try {
-    // Update analytics before returning
-    await supabaseService.updateAnalyticsSummary();
-    
-    const analyticsResult = await supabaseService.getAnalyticsSummary();
-    
-    if (!analyticsResult.success) {
-      return res.status(500).json(responses.error('Fehler beim Laden der Analytics', 'ANALYTICS_LOAD_FAILED'));
-    }
+    // Mock Analytics-Daten für Demo
+    const mockAnalytics = [
+      {
+        id: 1,
+        question_text: "How would you rate the overall user interface?",
+        category: "UI/UX",
+        avg_rating: 4.2,
+        total_responses: 15,
+        response_distribution: {
+          "1": 1,
+          "2": 2,
+          "3": 3,
+          "4": 5,
+          "5": 4
+        }
+      },
+      {
+        id: 2,
+        question_text: "How satisfied are you with the app performance?",
+        category: "Performance",
+        avg_rating: 3.8,
+        total_responses: 12,
+        response_distribution: {
+          "1": 0,
+          "2": 2,
+          "3": 4,
+          "4": 4,
+          "5": 2
+        }
+      },
+      {
+        id: 3,
+        question_text: "Would you recommend this app to others?",
+        category: "General",
+        avg_rating: 4.5,
+        total_responses: 20,
+        response_distribution: {
+          "1": 0,
+          "2": 1,
+          "3": 2,
+          "4": 7,
+          "5": 10
+        }
+      }
+    ];
 
-    res.json(responses.success(analyticsResult.data, 'Analytics erfolgreich geladen'));
+    res.json(responses.success(mockAnalytics, 'Analytics erfolgreich geladen'));
   } catch (error) {
     console.error('Error getting analytics:', error);
     res.status(500).json(responses.error('Interner Serverfehler', 'INTERNAL_ERROR'));
@@ -106,18 +146,50 @@ router.get('/sessions', authMiddleware, [
   const offset = parseInt(req.query.offset) || 0;
 
   try {
-    const sessionsResult = await supabaseService.getAllSessions(limit, offset);
-    
-    if (!sessionsResult.success) {
-      return res.status(500).json(responses.error('Fehler beim Laden der Sessions', 'SESSIONS_LOAD_FAILED'));
-    }
+    // Mock Sessions-Daten für Demo
+    const mockSessions = [
+      {
+        id: 'session_001',
+        user_email: 'user1@example.com',
+        status: 'completed',
+        created_at: new Date(Date.now() - 86400000).toISOString(), // 1 Tag ago
+        completed_at: new Date(Date.now() - 86300000).toISOString(),
+        responses_count: 5
+      },
+      {
+        id: 'session_002',
+        user_email: 'user2@example.com',
+        status: 'completed',
+        created_at: new Date(Date.now() - 172800000).toISOString(), // 2 Tage ago
+        completed_at: new Date(Date.now() - 172700000).toISOString(),
+        responses_count: 3
+      },
+      {
+        id: 'session_003',
+        user_email: null,
+        status: 'pending',
+        created_at: new Date(Date.now() - 3600000).toISOString(), // 1 Stunde ago
+        completed_at: null,
+        responses_count: 0
+      },
+      {
+        id: 'session_004',
+        user_email: 'user3@example.com',
+        status: 'completed',
+        created_at: new Date(Date.now() - 259200000).toISOString(), // 3 Tage ago
+        completed_at: new Date(Date.now() - 259100000).toISOString(),
+        responses_count: 7
+      }
+    ];
+
+    const paginatedSessions = mockSessions.slice(offset, offset + limit);
 
     res.json(responses.success({
-      sessions: sessionsResult.data,
+      sessions: paginatedSessions,
       pagination: {
         limit,
         offset,
-        total: sessionsResult.count
+        total: mockSessions.length
       }
     }, 'Sessions erfolgreich geladen'));
   } catch (error) {

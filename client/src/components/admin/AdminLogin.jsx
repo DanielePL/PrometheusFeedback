@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Lock, Eye, EyeOff, LogIn } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useAdmin } from '../context/AdminContext';
+import { useAdmin } from '../../context/AdminContext';
 
 const AdminLogin = () => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -13,22 +14,22 @@ const AdminLogin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!password.trim()) {
-      toast.error('Please enter a password');
+    if (!email.trim() || !password.trim()) {
+      toast.error('Bitte E-Mail und Passwort eingeben');
       return;
     }
 
     setLoading(true);
     try {
-      const result = await login(password);
+      const result = await login(email, password);
       
       if (result.success) {
-        toast.success('Successfully logged in');
+        toast.success('Erfolgreich angemeldet');
       } else {
-        toast.error(result.error || 'Login failed');
+        toast.error(result.error || 'Login fehlgeschlagen');
       }
     } catch (error) {
-      toast.error('An error occurred');
+      toast.error('Ein Fehler ist aufgetreten');
     } finally {
       setLoading(false);
     }
@@ -68,9 +69,28 @@ const AdminLogin = () => {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email Field */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Admin Password
+                E-Mail
+              </label>
+              <div className="relative">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@example.com"
+                  className="w-full bg-black/60 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors"
+                  required
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            {/* Password Field */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Passwort
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />

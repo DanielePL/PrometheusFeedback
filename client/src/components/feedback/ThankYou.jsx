@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, Gift, Star, Home, MessageSquare } from 'lucide-react';
-import { ui } from '../utils/helpers';
+import { ui } from '../../utils/helpers';
 
 const ThankYou = () => {
   

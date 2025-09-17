@@ -11,7 +11,7 @@ import {
   FileText
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useAdmin } from '../context/AdminContext';
+import { useAdmin } from '../../context/AdminContext';
 
 const AdminDashboard = () => {
   const {

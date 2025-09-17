@@ -1,70 +1,99 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, MessageSquare, Settings } from 'lucide-react';
+import { Home, MessageSquare, Settings, X } from 'lucide-react';
 
 const Header = () => {
   const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isActive = (path) => {
     return location.pathname === path;
   };
 
-  return (
-    <header className="bg-prometheus-gray border-b border-prometheus-gray-light sticky top-0 z-50 safe-area-top">
-      <div className="max-w-md mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-prometheus-orange rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">P</span>
-            </div>
-            <div>
-              <h1 className="text-prometheus-orange font-bold text-lg">Prometheus</h1>
-              <p className="text-xs text-gray-400 -mt-1">Feedback</p>
-            </div>
-          </Link>
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
-          {/* Navigation */}
-          <nav className="flex items-center space-x-4">
-            <Link
-              to="/"
-              className={`p-2 rounded-lg transition-colors ${
-                isActive('/') 
-                  ? 'bg-prometheus-orange text-white' 
-                  : 'text-gray-400 hover:text-white hover:bg-prometheus-gray-light'
-              }`}
-              aria-label="Home"
-            >
-              <Home size={20} />
-            </Link>
-            
-            <Link
-              to="/feedback"
-              className={`p-2 rounded-lg transition-colors ${
-                isActive('/feedback') 
-                  ? 'bg-prometheus-orange text-white' 
-                  : 'text-gray-400 hover:text-white hover:bg-prometheus-gray-light'
-              }`}
-              aria-label="Feedback geben"
-            >
-              <MessageSquare size={20} />
-            </Link>
-            
-            <Link
-              to="/admin"
-              className={`p-2 rounded-lg transition-colors ${
-                isActive('/admin') 
-                  ? 'bg-prometheus-orange text-white' 
-                  : 'text-gray-400 hover:text-white hover:bg-prometheus-gray-light'
-              }`}
-              aria-label="Admin-Bereich"
-            >
-              <Settings size={20} />
-            </Link>
-          </nav>
-        </div>
-      </div>
-    </header>
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
+  return (
+    <>
+      {/* Hamburger Menu Button - Fixed top right */}
+      <button
+        onClick={toggleMenu}
+        className="fixed top-6 right-6 z-[60] p-3 bg-black/80 backdrop-blur-sm border border-orange-600/50 rounded-lg hover:bg-orange-600/20 transition-all duration-300"
+        aria-label="Menu"
+      >
+        {isMenuOpen ? (
+          <X size={24} className="text-orange-400" />
+        ) : (
+          <div className="flex flex-col space-y-1">
+            <div className="w-6 h-0.5 bg-orange-400"></div>
+            <div className="w-6 h-0.5 bg-orange-400"></div>
+            <div className="w-6 h-0.5 bg-orange-400"></div>
+          </div>
+        )}
+      </button>
+
+      {/* Dropdown Menu */}
+      {isMenuOpen && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 z-40"
+            onClick={closeMenu}
+          />
+          
+          {/* Dropdown Menu */}
+          <div className="fixed top-20 right-6 z-50 bg-black/95 backdrop-blur-sm border border-orange-600/50 rounded-lg min-w-[200px] shadow-xl">
+            {/* Navigation Links */}
+            <nav className="flex flex-col p-2">
+              <Link
+                to="/"
+                onClick={closeMenu}
+                className={`flex items-center space-x-3 p-3 rounded-lg transition-all ${
+                  isActive('/') 
+                    ? 'bg-orange-600 text-white' 
+                    : 'text-gray-300 hover:text-white hover:bg-orange-600/20'
+                }`}
+              >
+                <Home size={20} />
+                <span>Home</span>
+              </Link>
+              
+              <Link
+                to="/feedback"
+                onClick={closeMenu}
+                className={`flex items-center space-x-3 p-3 rounded-lg transition-all ${
+                  isActive('/feedback') 
+                    ? 'bg-orange-600 text-white' 
+                    : 'text-gray-300 hover:text-white hover:bg-orange-600/20'
+                }`}
+              >
+                <MessageSquare size={20} />
+                <span>Give Feedback</span>
+              </Link>
+
+              {/* Admin Link */}
+              <Link
+                to="/admin"
+                onClick={closeMenu}
+                className={`flex items-center space-x-3 p-3 rounded-lg transition-all ${
+                  isActive('/admin') 
+                    ? 'bg-orange-600 text-white' 
+                    : 'text-gray-300 hover:text-white hover:bg-orange-600/20'
+                }`}
+              >
+                <Settings size={20} />
+                <span>Admin</span>
+              </Link>
+            </nav>
+          </div>
+        </>
+      )}
+    </>
   );
 };
 

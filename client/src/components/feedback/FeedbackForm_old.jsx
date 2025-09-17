@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Star, 
   Send, 
@@ -17,36 +17,57 @@ import {
   XCircle,
   Minus,
   Plus,
-  Download
+  Download,
+  Loader
 } from 'lucide-react';
+import { feedbackService } from '../../services/feedbackService';
 
 const FeedbackForm = () => {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
-    // Basic Info
-    name: '',
-    email: '',
-    deviceInfo: '',
-    
-    // Overall Rating
-    overallRating: 0,
-    recommendationScore: 0,
-    
-    // Feature-specific Ratings
-    exerciseLibraryRating: 0,
-    vbtRating: 0,
-    barTrackingRating: 0,
-    aiCoachRating: 0,
-    
-    // Feature Testing Results - Exercise Library
-    exerciseLibrary_opensWithoutError: '',
-    exerciseLibrary_searchWorks: '',
-    exerciseLibrary_filtersWork: '',
-    exerciseLibrary_detailsDisplay: '',
-    exerciseLibrary_videosLoad: '',
-    exerciseLibrary_favoritesWork: '',
-    exerciseLibrary_navigationIntuitive: '',
-    exerciseLibrary_loadingTimes: '',
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [sessionId, setSessionId] = useState(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [responses, setResponses] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Lade Fragen beim Komponenten-Mount
+  useEffect(() => {
+    loadQuestions();
+  }, []);
+
+  const loadQuestions = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Starte eine neue Feedback-Session
+      const sessionResponse = await feedbackService.startFeedbackSession();
+      setSessionId(sessionResponse.sessionId);
+      
+      // Lade aktive Fragen
+      const questionsData = await feedbackService.getQuestions();
+      setQuestions(questionsData.filter(q => q.is_active));
+      
+    } catch (err) {
+      console.error('Fehler beim Laden der Fragen:', err);
+      setError('Fragen konnten nicht geladen werden. Bitte versuchen Sie es später erneut.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResponse = (questionId, value, responseType = 'rating') => {
+    setResponses(prev => ({
+      ...prev,
+      [questionId]: {
+        value,
+        type: responseType,
+        questionId
+      }
+    }));
+  };
     
     // VBT Tracking
     vbt_sessionStarts: '',
@@ -148,12 +169,28 @@ const FeedbackForm = () => {
     'Exercise Library',
     'VBT Tracking', 
     'Bar Tracking',
+    'Workout Planning',
+    'Progress Tracking',
+    'Profile & Personalization',
+    'Notifications & Settings',
+    'UI/UX & Design',
     'AI Coach',
     'UX/Interface',
     'Performance',
     'Mobile Features',
-    'General'
+    'General',
+    'Sonstiges'
   ];
+
+  const categories = featureCategories;
+
+  const handleRatingClick = (rating) => {
+    setFormData(prev => ({
+      ...prev,
+      rating
+    }));
+    setHoverRating(0);
+  };
 
   const severityLevels = [
     { value: 'low', label: 'Niedrig', color: 'text-green-600' },
